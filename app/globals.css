@@ -25,3 +25,20 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.scroller {
+  height: 100vh;
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  scroll-snap-type: y mandatory;
+}
+
+.scroller-element {
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.scroller::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+}
