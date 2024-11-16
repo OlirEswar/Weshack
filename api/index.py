@@ -3,7 +3,7 @@ from psycopg2 import sql
 from dotenv import load_dotenv
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
 load_dotenv()
 app = Flask(__name__)
 
@@ -27,5 +27,5 @@ def hello_world():
     # Fetch all rows from the executed query
     rows = cursor.fetchall()
      
-    return rows
+    return jsonify(rows)
 

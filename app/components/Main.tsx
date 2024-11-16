@@ -16,25 +16,25 @@ export default function Main() {
         if (loading) return;
         setLoading(true);
         // server request
-        setTimeout(() => {
-            const newPosts = [
-                { id: posts.length, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." },
-                { id: posts.length + 1, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." }
-            ];
-            setPosts(prevPosts => [...prevPosts, ...newPosts]);
-            setLoading(false);
-            setHasMore(newPosts.length > 0);
-        }, 500)
-        // fetch('/api/python').then(res => console.log(res)).then(data => {
-        //     console.log(data);
+        // setTimeout(() => {
         //     const newPosts = [
-        //         { id: posts.length, text: data + "hello " + posts.length },
-        //     ]
-
+        //         { id: posts.length, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." },
+        //         { id: posts.length + 1, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." }
+        //     ];
         //     setPosts(prevPosts => [...prevPosts, ...newPosts]);
         //     setLoading(false);
-        //     //setHasMore(data.length > 0);
-        // });
+        //     setHasMore(newPosts.length > 0);
+        // }, 500)
+        fetch('/api/python').then(res => res.json()).then(data => {
+            console.log(data);
+            const newPosts = [
+                { id: posts.length, text: data },
+            ]
+
+            setPosts(prevPosts => [...prevPosts, ...newPosts]);
+            setLoading(false);
+            //setHasMore(data.length > 0);
+        });
     }
 
     useEffect(() => {
