@@ -8,7 +8,7 @@ from flask import Flask, jsonify
 load_dotenv()
 app = Flask(__name__)
 
-@app.route("/api/python")
+@app.route("/api/python", methods=["GET", "POST"])
 def hello_world():
     name = "Joey"
     prev_paper_topic = "math"
