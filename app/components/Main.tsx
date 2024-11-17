@@ -1,9 +1,8 @@
 "use client"
 
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import { Post as PostType } from "./types";
-import { randomUUID } from "crypto";
 
 export default function Main() {
     const dummyPost1: PostType = {
@@ -32,33 +31,10 @@ export default function Main() {
     ]);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-    const observedElements = useRef<Set<Element>>(new Set<Element>());
-    const time = useRef<number>(performance.now());
-
-    const [currentLiked, setCurrentLiked] = useState(false);
-    const [currentSaved, setCurrentSaved] = useState(false);
-
-    const handleLike = () => {
-        setCurrentLiked(!currentLiked);
-    }
-
-    const handleSave = () => {
-        setCurrentSaved(!currentSaved);
-    }
 
     const fetchMorePosts = () => {
         if (loading) return;
         setLoading(true);
-        // server request
-        // setTimeout(() => {
-        //     const newPosts = [
-        //         { id: posts.length, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." },
-        //         { id: posts.length + 1, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." }
-        //     ];
-        //     setPosts(prevPosts => [...prevPosts, ...newPosts]);
-        //     setLoading(false);
-        //     setHasMore(newPosts.length > 0);
-        // }, 500)
         fetch('/api/python').then(res => res.json()).then(data => {
             //console.log(data);
             const newPosts = [{ 
@@ -77,25 +53,6 @@ export default function Main() {
         });
     }
 
-    const handleScroll = (id: number) => {
-        if (id === 0) return;
-        const newTime = performance.now();
-        const totalTime = newTime - time.current;
-        time.current = newTime;
-        fetch('/api/python', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: id - 1,
-                time: totalTime
-            })
-        }).then(res => res.json()).then(data => {
-            console.log(data);
-        });
-        
-    }
 
     useEffect(() => {
         const options = {
@@ -112,21 +69,6 @@ export default function Main() {
             })
         }, options);
 
-        const postsObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !observedElements.current.has(entry.target)) {
-                    observer.unobserve(entry.target);
-                    console.log(entry.target.id)
-                    observedElements.current.add(entry.target);
-                    handleScroll(parseInt(entry.target.id.split('-')[1]));
-                }
-            })
-        }, { threshold: 1 });
-
-        document.querySelectorAll('.scroller-element').forEach(element => {
-            postsObserver.observe(element);
-        });
-
         if (sentinelRef.current) {
             sentinelObserver.observe(sentinelRef.current);
         }
@@ -141,7 +83,7 @@ export default function Main() {
 
     return (
         <main id="main-container" className="flex min-h-screen flex-col items-center justify-between scroller">
-            {posts.map(post => <Post key={post.id} data={post} />)}
+            {posts.map((post, index) => <Post key={index} data={post} />)}
             <div ref={sentinelRef} id="sentinel" />
         </main>
     )
