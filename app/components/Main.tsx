@@ -2,12 +2,30 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Post from "./Post";
+import { Post as PostType } from "./types";
 
 export default function Main() {
+    const dummyPost1: PostType = {
+        id: 0,
+        title: "Lorem Ipsum",
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero.",
+        author: "shark",
+        keywords: ["shark", "shark", "shark"],
+        createdAt: new Date()
+    }
+
+    const dummyPost2: PostType = {
+        id: 1,
+        title: "Lorem Ipsum",
+        content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero.",
+        author: "shark",
+        keywords: ["shark", "shark", "shark"],
+        createdAt: new Date()
+    }
+
     const sentinelRef = useRef<HTMLDivElement>(null);
     const [posts, setPosts] = useState([
-        { id: 0, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." },
-        { id: 1, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." }
+        dummyPost1, dummyPost2
     ]);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -27,9 +45,14 @@ export default function Main() {
         // }, 500)
         fetch('/api/python').then(res => res.json()).then(data => {
             console.log(data);
-            const newPosts = [
-                { id: posts.length, text: data },
-            ]
+            const newPosts = [{ 
+                id: posts.length,
+                title: "Lorem Ipsum" + posts.length,
+                content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." + data[0],
+                author: "shark",
+                keywords: ["shark", "shark", "shark"],
+                createdAt: new Date()
+            }]
 
             setPosts(prevPosts => [...prevPosts, ...newPosts]);
             setLoading(false);
@@ -66,7 +89,7 @@ export default function Main() {
 
     return (
         <main id="main-container" className="flex min-h-screen flex-col items-center justify-between scroller">
-            {posts.map(post => <Post key={post.id} n={post.id} text={post.text} />)}
+            {posts.map(post => <Post key={post.id} data={post} />)}
             <div ref={sentinelRef} id="sentinel" />
         </main>
     )
