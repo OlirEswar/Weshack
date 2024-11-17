@@ -3,10 +3,12 @@
 import { use, useEffect, useRef, useState } from "react";
 import Post from "./Post";
 import { Post as PostType } from "./types";
+import { randomUUID } from "crypto";
 
 export default function Main() {
     const dummyPost1: PostType = {
-        id: 0,
+        index: 0,
+        id: "3ij21md1",
         title: "Lorem Ipsum",
         content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero.",
         author: "shark",
@@ -15,7 +17,8 @@ export default function Main() {
     }
 
     const dummyPost2: PostType = {
-        id: 1,
+        index: 1,
+        id: "2m3iic01",
         title: "Lorem Ipsum",
         content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero.",
         author: "shark",
@@ -29,6 +32,19 @@ export default function Main() {
     ]);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const observedElements = useRef<Set<Element>>(new Set<Element>());
+    const time = useRef<number>(performance.now());
+
+    const [currentLiked, setCurrentLiked] = useState(false);
+    const [currentSaved, setCurrentSaved] = useState(false);
+
+    const handleLike = () => {
+        setCurrentLiked(!currentLiked);
+    }
+
+    const handleSave = () => {
+        setCurrentSaved(!currentSaved);
+    }
 
     const fetchMorePosts = () => {
         if (loading) return;
@@ -44,9 +60,10 @@ export default function Main() {
         //     setHasMore(newPosts.length > 0);
         // }, 500)
         fetch('/api/python').then(res => res.json()).then(data => {
-            console.log(data);
+            //console.log(data);
             const newPosts = [{ 
-                id: posts.length,
+                index: posts.length,
+                id: '1' + Math.floor(Math.random() * 1000000).toString().padStart(7, '0'),
                 title: "Lorem Ipsum" + posts.length,
                 content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut purus eget libero." + data[0],
                 author: "shark",
@@ -60,6 +77,26 @@ export default function Main() {
         });
     }
 
+    const handleScroll = (id: number) => {
+        if (id === 0) return;
+        const newTime = performance.now();
+        const totalTime = newTime - time.current;
+        time.current = newTime;
+        fetch('/api/python', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: id - 1,
+                time: totalTime
+            })
+        }).then(res => res.json()).then(data => {
+            console.log(data);
+        });
+        
+    }
+
     useEffect(() => {
         const options = {
             root: document.querySelector('#main-container'),
@@ -67,7 +104,7 @@ export default function Main() {
             threshold: 0.83
         };
 
-        const observer = new IntersectionObserver((entries, observer) => {
+        const sentinelObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && hasMore) {
                     fetchMorePosts();
@@ -75,13 +112,28 @@ export default function Main() {
             })
         }, options);
 
+        const postsObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !observedElements.current.has(entry.target)) {
+                    observer.unobserve(entry.target);
+                    console.log(entry.target.id)
+                    observedElements.current.add(entry.target);
+                    handleScroll(parseInt(entry.target.id.split('-')[1]));
+                }
+            })
+        }, { threshold: 1 });
+
+        document.querySelectorAll('.scroller-element').forEach(element => {
+            postsObserver.observe(element);
+        });
+
         if (sentinelRef.current) {
-            observer.observe(sentinelRef.current);
+            sentinelObserver.observe(sentinelRef.current);
         }
 
         return () => {
             if (sentinelRef.current) {
-                observer.unobserve(sentinelRef.current);
+                sentinelObserver.unobserve(sentinelRef.current);
             }
         };
 
